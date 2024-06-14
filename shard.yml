@@ -1,0 +1,9 @@
+name: openfeature
+version: 0.1.0
+
+authors:
+  - Vincent Landgraf <vincent@landgrafx.de>
+
+crystal: '>= 1.12.2'
+
+license: MIT
