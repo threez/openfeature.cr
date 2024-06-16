@@ -8,9 +8,9 @@ class CaptureEvaluationContextProvider < OpenFeature::Providers::Noop
     OpenFeature::EvaluationContext.new
   }
 
-  def resolve_boolean_value(flag_key : String,
+  def resolve_boolean_value(flag_key : OpenFeature::FlagKey,
                             default : Bool = true,
-                            ctx : OpenFeature::EvaluationContext? = nil) : OpenFeature::ResolutionDetails(Bool)
+                            ctx : OpenFeature::EvaluationContext? = nil) : OpenFeature::ResolutionDetails
     @last_ctx = ctx
     super(flag_key, default, ctx)
   end

@@ -67,7 +67,7 @@ module OpenFeature
     # fractional flag evaluation, rules, or overrides targeting specific users.
     # Such providers may behave unpredictably if a targeting key is not
     # specified at flag resolution.
-    property targeting_key : String?
+    property targeting_key : TargetingKey?
 
     property custom_fields : CustomFields
 
@@ -105,6 +105,8 @@ module OpenFeature
     end
   end
 
+  # Additional options that allow to define hooks and hook options for an
+  # invocation.
   class EvaluationOptions
     property hooks : Array(Hook)
     property hook_hints : HookHints { HookHints.new }
@@ -123,15 +125,16 @@ module OpenFeature
 
   # A structure which contains a subset of the fields defined in the evaluation
   # details, representing the result of the provider's flag resolution process
-  class ResolutionDetails(T)
-    property value : T
+  class ResolutionDetails
+    property value : DetailValue
     property error_code : ErrorCode?
     property error_message : String?
     property reason : Reason?
     property variant : String?
     property flag_metadata : FlagMetadata?
 
-    def initialize(@value : T, *,
+    def initialize(@value : DetailValue,
+                   *,
                    @variant : String? = nil,
                    @error_code : ErrorCode? = nil,
                    @error_message : String? = nil,
@@ -142,10 +145,10 @@ module OpenFeature
 
   # A structure representing the result of the flag evaluation process,
   # and made available in the detailed flag resolution functions
-  class FlagEvaluationDetails(T) < ResolutionDetails(T)
-    property flag_key : String
+  class FlagEvaluationDetails < ResolutionDetails
+    property flag_key : FlagKey
 
-    def initialize(@flag_key : String, *,
+    def initialize(@flag_key : FlagKey, *,
                    @value : DetailValue,
                    @value_type : Type,
                    @variant : String? = nil,
@@ -155,7 +158,7 @@ module OpenFeature
                    @flag_metadata : FlagMetadata? = nil)
     end
 
-    def initialize(@flag_key : String, value_type : Type, resolution : ResolutionDetails(T))
+    def initialize(@flag_key : FlagKey, value_type : Type, resolution : ResolutionDetails)
       @value = resolution.value
       @value_type = value_type
       @variant = resolution.variant

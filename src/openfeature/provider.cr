@@ -5,28 +5,18 @@ require "./evaluation"
 module OpenFeature
   DEFAULT_PROVIDER_DOMAIN = ""
 
-  @@providers = {} of String => Provider
+  @@providers = {} of Domain => Provider
 
   def self.provider=(provider : Provider)
     @@providers[DEFAULT_PROVIDER_DOMAIN] = provider
   end
 
-  def self.set_provider(provider : Provider, domain : String = DEFAULT_PROVIDER_DOMAIN)
+  def self.set_provider(provider : Provider, domain : Domain = DEFAULT_PROVIDER_DOMAIN)
     @@providers[domain] = provider
   end
 
-  def self.provider(domain : String = DEFAULT_PROVIDER_DOMAIN) : Provider
+  def self.provider(domain : Domain = DEFAULT_PROVIDER_DOMAIN) : Provider
     @@providers.fetch(domain, @@providers[DEFAULT_PROVIDER_DOMAIN])
-  end
-
-  class ProviderEventDetails
-    property flags_changed : Array(String)
-    property message : String?
-    property error_code : ErrorCode?
-    property event_metadata : EventMetadata = {} of String => DetailValue
-
-    def initialize(@flags_changed : Array(String))
-    end
   end
 
   class ProviderMetadata
@@ -79,19 +69,19 @@ module OpenFeature
       @evaluation_context = ectx || EvaluationContext.new
     end
 
-    abstract def resolve_boolean_value(flag_key : String,
+    abstract def resolve_boolean_value(flag_key : FlagKey,
                                        default : Bool = true,
-                                       ctx : EvaluationContext? = nil) : ResolutionDetails(Bool)
+                                       ctx : EvaluationContext? = nil) : ResolutionDetails
 
-    abstract def resolve_string_value(flag_key : String,
+    abstract def resolve_string_value(flag_key : FlagKey,
                                       default : String = "",
-                                      ctx : EvaluationContext? = nil) : ResolutionDetails(String)
+                                      ctx : EvaluationContext? = nil) : ResolutionDetails
 
-    abstract def resolve_number_value(flag_key : String,
+    abstract def resolve_number_value(flag_key : FlagKey,
                                       default : Number = 0,
-                                      ctx : EvaluationContext? = nil) : ResolutionDetails(Number)
+                                      ctx : EvaluationContext? = nil) : ResolutionDetails
 
-    abstract def resolve_object_value(flag_key : String,
+    abstract def resolve_object_value(flag_key : FlagKey,
                                       default = nil,
                                       ctx : EvaluationContext? = nil) : ResolutionDetails
   end

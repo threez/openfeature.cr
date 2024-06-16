@@ -15,14 +15,14 @@ module OpenFeature
   end
 
   class HookContext
-    getter flag_key : String
+    getter flag_key : FlagKey
     getter flag_value_type : Type
     getter default_value : DetailValue
     getter evaluation_context : EvaluationContext
     getter provider_metadata : ProviderMetadata
     getter client_metadata : ClientMetadata
 
-    def initialize(@flag_key : String,
+    def initialize(@flag_key : FlagKey,
                    @flag_value_type : Type,
                    @default_value : DetailValue,
                    @evaluation_context : EvaluationContext,
@@ -54,12 +54,64 @@ module OpenFeature
     abstract def before(ctx : HookContext, hints : HookHints) : EvaluationContext?
 
     # immediately after successful flag evaluation
-    abstract def after(ctx : HookContext, hints : HookHints)
+    abstract def after(ctx : HookContext, hints : HookHints, flag_details : FlagEvaluationDetails)
 
     # immediately after an unsuccessful during flag evaluation
-    abstract def error(ctx : HookContext, hints : HookHints)
+    abstract def error(ctx : HookContext, hints : HookHints, ex : Exception)
 
     # unconditionally after flag evaluation
     abstract def finally(ctx : HookContext, hints : HookHints)
+  end
+
+  class Client
+    getter hooks = Array(Hook).new
+
+    def add_hook(h : Hook)
+      @hooks << h
+    end
+
+    private def hooks_hints(options : EvaluationOptions? = nil) : EvaluationOptions
+      hooks = OpenFeature.hooks + @hooks
+      hints = HookHints.new
+      unless options.nil?
+        hooks = hooks + options.hooks
+        hints = options.hook_hints
+      end
+      EvaluationOptions.new(hooks, hints)
+    end
+
+    def with_hooks(flag_key : FlagKey,
+                   flag_type : Type,
+                   default : DetailValue,
+                   ctx : EvaluationContext? = nil,
+                   options : EvaluationOptions? = nil,
+                   &)
+      computed_options = hooks_hints(options)
+      merged_ctx = EvaluationContext.merged(client: @evaluation_context, invocation: ctx)
+      hook_ctx = uninitialized HookContext
+      computed_options.hooks.each do |hook|
+        hook_ctx = HookContext.new(flag_key, Type::Boolean, default, merged_ctx, provider.metadata, @metadata)
+        if new_ctx = hook.before(hook_ctx, computed_options.hook_hints)
+          merged_ctx = merged_ctx.merge(new_ctx)
+        end
+      end
+
+      begin
+        result = yield(merged_ctx)
+        computed_options.hooks.each do |hook|
+          hook.after(hook_ctx, computed_options.hook_hints, result)
+        end
+        result
+      rescue exception
+        computed_options.hooks.each do |hook|
+          hook.error(hook_ctx, computed_options.hook_hints, exception)
+        end
+        raise exception
+      ensure
+        computed_options.hooks.each do |hook|
+          hook.finally(hook_ctx, computed_options.hook_hints)
+        end
+      end
+    end
   end
 end

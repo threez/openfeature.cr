@@ -24,7 +24,8 @@ describe OpenFeature do
     end
 
     it "object_value" do
-      default = Time.local
+      default = OpenFeature::CustomFields.new
+      default["foo"] = "bar"
       obj = client.object_value("obj", default)
       obj.should eq(default)
     end
@@ -46,7 +47,7 @@ describe OpenFeature do
         custom_fields["replace"] = 2
       end
 
-      OpenFeature.add_proc_hook before: OpenFeature::ProcStageHook.new { |_, _|
+      OpenFeature.add_proc_hook before: OpenFeature::BeforeStageHook.new { |_, _|
         OpenFeature::EvaluationContext.new do |custom_fields|
           custom_fields["ghook"] = "it"
           custom_fields["replace"] = 5
@@ -59,7 +60,7 @@ describe OpenFeature do
       end
       client = OpenFeature.client("ctx", context: client_context)
 
-      client.add_proc_hook before: OpenFeature::ProcStageHook.new { |_, _|
+      client.add_proc_hook before: OpenFeature::BeforeStageHook.new { |_, _|
         OpenFeature::EvaluationContext.new do |custom_fields|
           custom_fields["chook"] = "it"
           custom_fields["replace"] = 6
@@ -72,7 +73,7 @@ describe OpenFeature do
       end
 
       options = OpenFeature::EvaluationOptions.new
-      options.add_proc_hook before: OpenFeature::ProcStageHook.new { |_, _|
+      options.add_proc_hook before: OpenFeature::BeforeStageHook.new { |_, _|
         OpenFeature::EvaluationContext.new do |custom_fields|
           custom_fields["ihook"] = "it"
           custom_fields["replace"] = 7
