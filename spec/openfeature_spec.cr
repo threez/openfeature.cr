@@ -1,6 +1,19 @@
 require "./spec_helper"
 
 describe OpenFeature do
+  describe "Handler" do
+    count = 0
+
+    OpenFeature.add_handler(OpenFeature::ProviderEvent::READY) do |event|
+      event.provider_name.should eq("noop")
+      count += 1
+    end
+
+    it "got signal for provider ready" do
+      count.should eq(1)
+    end
+  end
+
   describe "_value functions" do
     OpenFeature.provider = OpenFeature::Providers::Noop.new
     client = OpenFeature.client("app")
@@ -24,7 +37,7 @@ describe OpenFeature do
     end
 
     it "object_value" do
-      default = OpenFeature::CustomFields.new
+      default = OpenFeature::Structure.new
       default["foo"] = "bar"
       obj = client.object_value("obj", default)
       obj.should eq(default)
@@ -58,7 +71,7 @@ describe OpenFeature do
         custom_fields["agent"] = "rest"
         custom_fields["replace"] = 3
       end
-      client = OpenFeature.client("ctx", context: client_context)
+      client = OpenFeature.client("ctx", evaluation_context: client_context)
 
       client.add_proc_hook before: OpenFeature::BeforeStageHook.new { |_, _|
         OpenFeature::EvaluationContext.new do |custom_fields|

@@ -14,11 +14,15 @@ module OpenFeature
   # and time will be treated as UTC.
   alias Datetime = Time
 
-  alias CustomField = Bool | String | Number | Datetime
+  alias CustomFields = Hash(String, SimpleValue)
 
-  alias CustomFields = Hash(String, CustomField)
+  alias Structure = Hash(String, SimpleValue)
 
-  alias FlagMetadata = Hash(String, Object)
+  alias SimpleValue = Bool | String | Float | Int | Datetime
+
+  alias Value = SimpleValue | Structure
+
+  alias Metadata = Hash(String, Value)
 
   enum Type
     # A logical true or false, as represented idiomatically in

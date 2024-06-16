@@ -3,11 +3,8 @@ require "./provider"
 
 module OpenFeature
   def self.client(domain : Domain = DEFAULT_PROVIDER_DOMAIN, *,
-                  context ectx : EvaluationContext? = nil) : Client
-    Client.new(provider(domain), ectx)
-  end
-
-  class ClientMetadata
+                  evaluation_context ectx : EvaluationContext? = nil) : Client
+    Client.new(provider(domain), evaluation_context: ectx)
   end
 
   # A lightweight abstraction that provides functions to evaluate feature flags.
@@ -15,11 +12,15 @@ module OpenFeature
   class Client
     getter provider : Provider
     getter evaluation_context : EvaluationContext
-    getter metadata : ClientMetadata
+    getter metadata : Metadata
 
-    def initialize(@provider : Provider, ectx : EvaluationContext? = nil)
+    def initialize(@provider : Provider,
+                   *,
+                   evaluation_context ectx : EvaluationContext? = nil,
+                   metadata md : Metadata? = nil)
       @evaluation_context = ectx || EvaluationContext.new
-      @metadata = ClientMetadata.new
+      @metadata = md || Metadata.new
+      @provider.add_client(self)
     end
 
     # # Value
@@ -49,11 +50,11 @@ module OpenFeature
     end
 
     def object_value(flag_key : FlagKey,
-                     default = CustomFields,
+                     default : Structure,
                      *,
                      context ctx : EvaluationContext? = nil,
-                     options : EvaluationOptions? = nil) : CustomFields
-      object_details(flag_key, default, context: ctx, options: options).value.as(CustomFields)
+                     options : EvaluationOptions? = nil) : Structure
+      object_details(flag_key, default, context: ctx, options: options).value.as(Structure)
     end
 
     # # Details
@@ -92,7 +93,7 @@ module OpenFeature
     end
 
     def object_details(flag_key : FlagKey,
-                       default : CustomFields = nil,
+                       default : Structure = nil,
                        *,
                        context ctx : EvaluationContext? = nil,
                        options : EvaluationOptions? = nil)

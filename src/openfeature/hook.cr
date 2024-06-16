@@ -17,21 +17,19 @@ module OpenFeature
   class HookContext
     getter flag_key : FlagKey
     getter flag_value_type : Type
-    getter default_value : DetailValue
+    getter default_value : Value
     getter evaluation_context : EvaluationContext
-    getter provider_metadata : ProviderMetadata
-    getter client_metadata : ClientMetadata
+    getter provider_metadata : Metadata
+    getter client_metadata : Metadata
 
     def initialize(@flag_key : FlagKey,
                    @flag_value_type : Type,
-                   @default_value : DetailValue,
+                   @default_value : Value,
                    @evaluation_context : EvaluationContext,
-                   @provider_metadata : ProviderMetadata,
-                   @client_metadata : ClientMetadata)
+                   @provider_metadata : Metadata,
+                   @client_metadata : Metadata)
     end
   end
-
-  alias HookHints = Hash(String, DetailValue)
 
   # Hooks are a mechanism whereby application developers can add arbitrary behavior to flag evaluation.
   # They operate similarly to middleware in many web frameworks.
@@ -51,28 +49,36 @@ module OpenFeature
   # tools, and logging errors.
   abstract class Hook
     # immediately before flag evaluation
-    abstract def before(ctx : HookContext, hints : HookHints) : EvaluationContext?
+    abstract def before(ctx : HookContext, hints : Metadata) : EvaluationContext?
 
     # immediately after successful flag evaluation
-    abstract def after(ctx : HookContext, hints : HookHints, flag_details : FlagEvaluationDetails)
+    abstract def after(ctx : HookContext, hints : Metadata, flag_details : FlagEvaluationDetails)
 
     # immediately after an unsuccessful during flag evaluation
-    abstract def error(ctx : HookContext, hints : HookHints, ex : Exception)
+    abstract def error(ctx : HookContext, hints : Metadata, ex : Exception)
 
     # unconditionally after flag evaluation
-    abstract def finally(ctx : HookContext, hints : HookHints)
+    abstract def finally(ctx : HookContext, hints : Metadata)
   end
 
   class Client
     getter hooks = Array(Hook).new
 
+    # add the passed hook
     def add_hook(h : Hook)
       @hooks << h
     end
 
+    # remove the passed hook
+    def remove_hook(h : Hook)
+      @hooks.delete(h)
+    end
+
+    # creates evaluation options based on the global and
+    # client settings using the passed invocation hints
     private def hooks_hints(options : EvaluationOptions? = nil) : EvaluationOptions
       hooks = OpenFeature.hooks + @hooks
-      hints = HookHints.new
+      hints = Metadata.new
       unless options.nil?
         hooks = hooks + options.hooks
         hints = options.hook_hints
@@ -80,17 +86,18 @@ module OpenFeature
       EvaluationOptions.new(hooks, hints)
     end
 
-    def with_hooks(flag_key : FlagKey,
-                   flag_type : Type,
-                   default : DetailValue,
-                   ctx : EvaluationContext? = nil,
-                   options : EvaluationOptions? = nil,
-                   &)
+    # executes the hooks around a provider interaction
+    private def with_hooks(flag_key : FlagKey,
+                           flag_type : Type,
+                           default : Value,
+                           ctx : EvaluationContext? = nil,
+                           options : EvaluationOptions? = nil,
+                           &)
       computed_options = hooks_hints(options)
       merged_ctx = EvaluationContext.merged(client: @evaluation_context, invocation: ctx)
       hook_ctx = uninitialized HookContext
       computed_options.hooks.each do |hook|
-        hook_ctx = HookContext.new(flag_key, Type::Boolean, default, merged_ctx, provider.metadata, @metadata)
+        hook_ctx = HookContext.new(flag_key, flag_type, default, merged_ctx, provider.metadata, @metadata)
         if new_ctx = hook.before(hook_ctx, computed_options.hook_hints)
           merged_ctx = merged_ctx.merge(new_ctx)
         end

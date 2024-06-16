@@ -4,7 +4,7 @@ module OpenFeature::Providers
   class Noop < Provider
     def initialize
       super("noop")
-      @state = ProviderEvents::READY
+      set_state(ProviderEvent::READY)
     end
 
     def resolve_boolean_value(flag_key : FlagKey,
@@ -26,7 +26,7 @@ module OpenFeature::Providers
     end
 
     def resolve_object_value(flag_key : FlagKey,
-                             default = nil,
+                             default : CustomFields,
                              ctx : EvaluationContext? = nil) : ResolutionDetails
       ResolutionDetails.new(default, reason: Reason::STATIC)
     end

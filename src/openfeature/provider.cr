@@ -5,10 +5,10 @@ require "./evaluation"
 module OpenFeature
   DEFAULT_PROVIDER_DOMAIN = ""
 
-  @@providers = {} of Domain => Provider
+  @@providers = Hash(Domain, Provider).new
 
   def self.provider=(provider : Provider)
-    @@providers[DEFAULT_PROVIDER_DOMAIN] = provider
+    set_provider(provider, domain: DEFAULT_PROVIDER_DOMAIN)
   end
 
   def self.set_provider(provider : Provider, domain : Domain = DEFAULT_PROVIDER_DOMAIN)
@@ -17,31 +17,6 @@ module OpenFeature
 
   def self.provider(domain : Domain = DEFAULT_PROVIDER_DOMAIN) : Provider
     @@providers.fetch(domain, @@providers[DEFAULT_PROVIDER_DOMAIN])
-  end
-
-  class ProviderMetadata
-    property name : String
-
-    def initialize(@name : String)
-    end
-  end
-
-  enum ProviderStatus
-    # The provider has not been initialized.
-    NOT_READY
-    # The provider has been initialized, and is able
-    # to reliably resolve flag values.
-    READY
-    # The provider is initialized but is not able to reliably
-    # resolve flag values.
-    ERROR
-    # The provider's cached state is no longer valid
-    # and may not be up-to-date with the source of truth.
-    STALE
-    # The provider has entered an irrecoverable error state.
-    FATAL
-    # The provider is reconciling its state with a context change.
-    RECONCILING
   end
 
   # The provider API defines interfaces that Provider Authors can use to abstract a
@@ -58,15 +33,54 @@ module OpenFeature
   # system. Hypothetical provider implementations might wrap a vendor SDK, embed an REST
   # client, or read flags from a local file.
   abstract class Provider
-    getter state : ProviderEvents
-    getter metadata : ProviderMetadata
+    getter name : String
+    getter state : ProviderEvent
+    getter metadata : Metadata
     getter evaluation_context : EvaluationContext
 
-    def initialize(name : String, ectx : EvaluationContext? = nil)
-      @state = ProviderEvents::NOT_READY
-      @metadata = ProviderMetadata.new(name)
-      @hooks = Hash(String, Array(Hook)).new
+    def initialize(@name : String,
+                   *,
+                   evaluation_context ectx : EvaluationContext? = nil,
+                   metadata md : Metadata? = nil,
+                   @hooks = Hash(String, Array(Hook)).new)
+      @state = ProviderEvent::NOT_READY
+      @metadata = md || Metadata.new
+      @metadata["name"] = name
       @evaluation_context = ectx || EvaluationContext.new
+      @clients = Array(Client).new
+    end
+
+    # adds the passed client to the list of clients
+    def add_client(client : Client)
+      @clients << client
+    end
+
+    # remove the clinet from the provider
+    def remove_client(client : Client)
+      @client.delete(client)
+    end
+
+    # sets the state and emits an event for it
+    private def set_state(event : ProviderEvent)
+      @state = event
+      emit_event(@state, ProviderEventDetails.new)
+    end
+
+    # emits event to global and client providers registered
+    private def emit_event(event : ProviderEvent, details : ProviderEventDetails)
+      if handlers = OpenFeature.handlers[event]
+        handlers.each do |handler|
+          handler.call(EventDetails.new(@name, details))
+        end
+      end
+
+      @clients.each do |client|
+        if handlers = client.handlers[event]
+          handlers.each do |handler|
+            handler.call(EventDetails.new(@name, details))
+          end
+        end
+      end
     end
 
     abstract def resolve_boolean_value(flag_key : FlagKey,
@@ -82,7 +96,7 @@ module OpenFeature
                                       ctx : EvaluationContext? = nil) : ResolutionDetails
 
     abstract def resolve_object_value(flag_key : FlagKey,
-                                      default = nil,
+                                      default : Structure,
                                       ctx : EvaluationContext? = nil) : ResolutionDetails
   end
 

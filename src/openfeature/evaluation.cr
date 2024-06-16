@@ -71,7 +71,8 @@ module OpenFeature
 
     property custom_fields : CustomFields
 
-    def initialize(*, @targeting_key : String? = nil,
+    def initialize(*,
+                   @targeting_key : String? = nil,
                    @custom_fields : CustomFields = CustomFields.new)
     end
 
@@ -109,13 +110,13 @@ module OpenFeature
   # invocation.
   class EvaluationOptions
     property hooks : Array(Hook)
-    property hook_hints : HookHints { HookHints.new }
+    property hook_hints : Metadata { Metadata.new }
 
-    def initialize(@hook_hints : HookHints? = nil)
+    def initialize(@hook_hints : Metadata? = nil)
       @hooks = Array(Hook).new
     end
 
-    def initialize(@hooks : Array(Hook), @hook_hints : HookHints? = nil)
+    def initialize(@hooks : Array(Hook), @hook_hints : Metadata? = nil)
     end
 
     def add_hook(h : Hook)
@@ -126,20 +127,20 @@ module OpenFeature
   # A structure which contains a subset of the fields defined in the evaluation
   # details, representing the result of the provider's flag resolution process
   class ResolutionDetails
-    property value : DetailValue
+    property value : Value
     property error_code : ErrorCode?
     property error_message : String?
     property reason : Reason?
     property variant : String?
-    property flag_metadata : FlagMetadata?
+    property flag_metadata : Metadata?
 
-    def initialize(@value : DetailValue,
+    def initialize(@value : Value,
                    *,
                    @variant : String? = nil,
                    @error_code : ErrorCode? = nil,
                    @error_message : String? = nil,
                    @reason : Reason? = nil,
-                   @flag_metadata : FlagMetadata? = nil)
+                   @flag_metadata : Metadata? = nil)
     end
   end
 
@@ -149,7 +150,7 @@ module OpenFeature
     property flag_key : FlagKey
 
     def initialize(@flag_key : FlagKey, *,
-                   @value : DetailValue,
+                   @value : Value,
                    @value_type : Type,
                    @variant : String? = nil,
                    @error_code : ErrorCode? = nil,
