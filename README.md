@@ -40,11 +40,13 @@ v2_enabled = client.boolean_value("v2_enabled", true)
 v2_enabled.should eq(true)
 ```
 
-TODO: Write usage instructions here
+The above code first sets the default provider. It then creates a client
+that can be used to resolve feature flags, in this case it checks if
+the **v2_enabled** is enabled.
 
 ## Contributing
 
-1. Fork it (<https://github.com/your-github-user/openfeature/fork>)
+1. Fork it (<https://github.com/threez/openfeature.cr/fork>)
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
@@ -52,9 +54,9 @@ TODO: Write usage instructions here
 
 ## Contributors
 
-- [Vincent Landgraf](https://github.com/your-github-user) - creator and maintainer
+- [Vincent Landgraf](https://github.com/threez) - creator and maintainer
 
 ## API
 
-* OpenAPI specification https://github.com/open-feature/protocol/blob/main/service/openapi.yaml
+* [OpenAPI specification](https://github.com/open-feature/protocol/blob/main/service/openapi.yaml)
 * https://openfeature.dev/specification/
