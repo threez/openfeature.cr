@@ -106,10 +106,18 @@ module OpenFeature
   end
 
   class EvaluationOptions
-    property hooks : Array(Hook)?
-    property hook_hints : HookHints?
+    property hooks : Array(Hook)
+    property hook_hints : HookHints { HookHints.new }
 
-    def initialize(@hooks : Array(Hook)?, @hook_hints : HookHints?)
+    def initialize(@hook_hints : HookHints? = nil)
+      @hooks = Array(Hook).new
+    end
+
+    def initialize(@hooks : Array(Hook), @hook_hints : HookHints? = nil)
+    end
+
+    def add_hook(h : Hook)
+      @hooks << h
     end
   end
 

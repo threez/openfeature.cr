@@ -48,7 +48,7 @@ describe OpenFeature do
 
       OpenFeature.add_proc_hook before: OpenFeature::ProcStageHook.new { |_, _|
         OpenFeature::EvaluationContext.new do |custom_fields|
-          custom_fields["hook"] = "it"
+          custom_fields["ghook"] = "it"
           custom_fields["replace"] = 5
         end
       }
@@ -59,11 +59,29 @@ describe OpenFeature do
       end
       client = OpenFeature.client("ctx", context: client_context)
 
+      client.add_proc_hook before: OpenFeature::ProcStageHook.new { |_, _|
+        OpenFeature::EvaluationContext.new do |custom_fields|
+          custom_fields["chook"] = "it"
+          custom_fields["replace"] = 6
+        end
+      }
+
       invocation_context = OpenFeature::EvaluationContext.new("user-1") do |custom_fields|
         custom_fields["invocation"] = "v2_enabled"
         custom_fields["replace"] = 4
       end
-      v2_enabled = client.boolean_value("v2_enabled", true, context: invocation_context)
+
+      options = OpenFeature::EvaluationOptions.new
+      options.add_proc_hook before: OpenFeature::ProcStageHook.new { |_, _|
+        OpenFeature::EvaluationContext.new do |custom_fields|
+          custom_fields["ihook"] = "it"
+          custom_fields["replace"] = 7
+        end
+      }
+
+      v2_enabled = client.boolean_value("v2_enabled", true,
+        context: invocation_context,
+        options: options)
       v2_enabled.should eq(true)
 
       provider.last_ctx.should_not be_nil
@@ -72,10 +90,12 @@ describe OpenFeature do
       custom_fields = ctx.custom_fields
       custom_fields["request-id"].should eq("12345")
       custom_fields["invocation"].should eq("v2_enabled")
-      custom_fields["hook"].should eq("it")
+      custom_fields["ghook"].should eq("it")
+      custom_fields["chook"].should eq("it")
+      custom_fields["ihook"].should eq("it")
       custom_fields["location"].should eq("DE")
       custom_fields["agent"].should eq("rest")
-      custom_fields["replace"].should eq(5)
+      custom_fields["replace"].should eq(7)
     end
   end
 end

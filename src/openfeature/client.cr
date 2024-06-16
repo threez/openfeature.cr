@@ -14,11 +14,17 @@ module OpenFeature
     getter provider : Provider
     getter evaluation_context : EvaluationContext
     getter metadata : ClientMetadata
+    getter hooks : Array(Hook)
 
     def initialize(@provider : Provider, ectx : EvaluationContext? = nil)
       @handlers = Hash(ProviderEvents, Array(Handler)).new
       @evaluation_context = ectx || EvaluationContext.new
       @metadata = ClientMetadata.new
+      @hooks = Array(Hook).new
+    end
+
+    def add_hook(h : Hook)
+      @hooks << h
     end
 
     # # Value
@@ -61,11 +67,11 @@ module OpenFeature
                             default : DetailValue,
                             ctx : EvaluationContext? = nil,
                             options : EvaluationOptions? = nil)
-        hooks = OpenFeature.hooks
+        hooks = OpenFeature.hooks + @hooks
         hints = HookHints.new
         unless options.nil?
           hooks = hooks + options.hooks
-          hints ||= options.hints
+          hints = options.hook_hints
         end
 
         merged_ctx = EvaluationContext.merged(client: @evaluation_context, invocation: ctx)
