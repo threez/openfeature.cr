@@ -1,17 +1,5 @@
 require "./spec_helper"
 
-
-class CaptureEvaluationContextProvider < OpenFeature::NoopProvider
-  property last_ctx : OpenFeature::EvaluationContext?
-  
-  def resolve_boolean_value(flag_key : String,
-      default : Bool = true,
-      ctx : OpenFeature::EvaluationContext? = nil) : OpenFeature::ResolutionDetails(Bool)
-    @last_ctx = ctx
-    return super(flag_key, default, ctx)
-  end
-end
-
 describe OpenFeature do
   describe "_value functions" do
     OpenFeature.provider = OpenFeature::NoopProvider.new
@@ -52,12 +40,12 @@ describe OpenFeature do
         cf["location"] = "DE"
         cf["replace"] = 1
       end
-  
+
       OpenFeature.transaction_context = OpenFeature::EvaluationContext.new("account-1") do |cf|
         cf["request-id"] = "12345"
         cf["replace"] = 2
       end
-  
+
       OpenFeature.add_proc_hook before: OpenFeature::ProcStageHook.new { |ctx, hints|
         OpenFeature::EvaluationContext.new do |cf|
           cf["hook"] = "it"
@@ -88,6 +76,6 @@ describe OpenFeature do
       cf["location"].should eq("DE")
       cf["agent"].should eq("rest")
       cf["replace"].should eq(5)
-    end 
+    end
   end
 end
