@@ -2,7 +2,7 @@ require "./spec_helper"
 
 describe OpenFeature do
   describe "_value functions" do
-    OpenFeature.provider = OpenFeature::NoopProvider.new
+    OpenFeature.provider = OpenFeature::Providers::Noop.new
     client = OpenFeature.client("app")
 
     it "boolean_value" do

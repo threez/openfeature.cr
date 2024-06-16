@@ -1,7 +1,7 @@
 require "../provider"
 
-module OpenFeature
-  class NoopProvider < Provider
+module OpenFeature::Providers
+  class Noop < Provider
     def initialize
       super("noop")
       @state = ProviderEvents::READY

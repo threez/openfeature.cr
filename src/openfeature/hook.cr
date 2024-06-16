@@ -10,14 +10,6 @@ module OpenFeature
     @@hooks << h
   end
 
-  def self.add_proc_hook(*,
-                         before : ProcStageHook? = nil,
-                         after : ProcStageHook? = nil,
-                         error : ProcStageHook? = nil,
-                         finally : ProcStageHook? = nil)
-    @@hooks << ProcHook.new(before: before, after: after, error: error, finally: finally)
-  end
-
   def self.hooks
     @@hooks
   end
@@ -41,6 +33,22 @@ module OpenFeature
 
   alias HookHints = Hash(String, DetailValue)
 
+  # Hooks are a mechanism whereby application developers can add arbitrary behavior to flag evaluation.
+  # They operate similarly to middleware in many web frameworks.
+  #
+  # Hooks add their logic at any of four specific stages of flag evaluation:
+  #
+  # `before`, immediately before flag evaluation
+  # `after`, immediately after successful flag evaluation
+  # `error`, immediately after an unsuccessful during flag evaluation
+  # `finally` unconditionally after flag evaluation
+  #
+  # ![](https://openfeature.dev/assets/images/life-cycle-7fb3185fab0ddd53634548321c8147c0.png)
+  #
+  # Hooks can be configured to run globally (impacting all flag evaluations), per client, or per
+  # flag evaluation invocation. Some example use-cases for hook include adding additional data to
+  # the evaluation context, performing validation on the received flag value, providing data to telemetric
+  # tools, and logging errors.
   abstract class Hook
     # immediately before flag evaluation
     abstract def before(ctx : HookContext, hints : HookHints) : EvaluationContext?
@@ -53,23 +61,5 @@ module OpenFeature
 
     # unconditionally after flag evaluation
     abstract def finally(ctx : HookContext, hints : HookHints)
-  end
-
-  alias ProcStageHook = Proc(HookContext, HookHints, EvaluationContext?)
-
-  class ProcHook < Hook
-    def initialize(*, @before : ProcStageHook? = nil,
-                   @after : ProcStageHook? = nil,
-                   @error : ProcStageHook? = nil,
-                   @finally : ProcStageHook? = nil)
-    end
-
-    {% for name in %w(before after error finally) %}
-    def {{ name.id }}(ctx : HookContext, hints : HookHints) : EvaluationContext?
-      unless @{{ name.id }}.nil?
-        @{{ name.id }}.not_nil!.call(ctx, hints)
-      end
-    end
-    {% end %}
   end
 end

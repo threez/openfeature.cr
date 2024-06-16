@@ -1,8 +1,9 @@
 require "spec"
 require "../src/openfeature"
-require "../src/openfeature/provider/*"
+require "../src/openfeature/providers/*"
+require "../src/openfeature/hooks/*"
 
-class CaptureEvaluationContextProvider < OpenFeature::NoopProvider
+class CaptureEvaluationContextProvider < OpenFeature::Providers::Noop
   property last_ctx : OpenFeature::EvaluationContext {
     OpenFeature::EvaluationContext.new
   }

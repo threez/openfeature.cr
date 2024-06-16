@@ -31,9 +31,9 @@ This library implements the crystal version of this specification.
 
 ```crystal
 require "openfeature"
-require "openfeature/provider/*"
+require "openfeature/providers/*"
 
-OpenFeature.provider = OpenFeature::NoopProvider.new
+OpenFeature.provider = OpenFeature::Providers::Noop.new
 client = OpenFeature.client("app")
 
 v2_enabled = client.boolean_value("v2_enabled", true)
