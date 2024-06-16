@@ -25,17 +25,17 @@ module OpenFeature
   class HookContext
     getter flag_key : String
     getter flag_value_type : Type
-    # TODO: getter default_value
+    getter default_value : DetailValue
     getter evaluation_context : EvaluationContext
     getter provider_metadata : ProviderMetadata
     getter client_metadata : ClientMetadata
 
     def initialize(@flag_key : String,
-      @flag_value_type : Type,
-      # TODO: @default_value,
-      @evaluation_context : EvaluationContext,
-      @provider_metadata : ProviderMetadata,
-      @client_metadata : ClientMetadata)
+                   @flag_value_type : Type,
+                   @default_value : DetailValue,
+                   @evaluation_context : EvaluationContext,
+                   @provider_metadata : ProviderMetadata,
+                   @client_metadata : ClientMetadata)
     end
   end
 

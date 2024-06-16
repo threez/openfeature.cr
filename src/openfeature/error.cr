@@ -1,7 +1,6 @@
-# TODO: Write documentation for `Openfeature`
 module OpenFeature
   class Error < ArgumentError; end
-  
+
   enum ErrorCode
     # The value was resolved before the provider was ready.
     PROVIDER_NOT_READY
@@ -18,12 +17,12 @@ module OpenFeature
     # The error was for a reason not enumerated above.
     GENERAL
   end
-  
+
   class ProviderError < Error
     property code : ErrorCode
 
     def initialize(@code : ErrorCode, msg : String)
-    super(msg)
+      super(msg)
     end
   end
 end

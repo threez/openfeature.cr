@@ -26,7 +26,6 @@ module OpenFeature
     property event_metadata : EventMetadata = {} of String => DetailValue
 
     def initialize(@flags_changed : Array(String))
-
     end
   end
 
@@ -77,24 +76,24 @@ module OpenFeature
       @state = ProviderEvents::NOT_READY
       @metadata = ProviderMetadata.new(name)
       @hooks = Hash(String, Array(Hook)).new
-      @evaluation_context = ectx || EvaluationContext.new()
+      @evaluation_context = ectx || EvaluationContext.new
     end
 
     abstract def resolve_boolean_value(flag_key : String,
-      default : Bool = true,
-      ctx : EvaluationContext? = nil) : ResolutionDetails(Bool)
+                                       default : Bool = true,
+                                       ctx : EvaluationContext? = nil) : ResolutionDetails(Bool)
 
     abstract def resolve_string_value(flag_key : String,
-      default : String = "",
-      ctx : EvaluationContext? = nil) : ResolutionDetails(String)
+                                      default : String = "",
+                                      ctx : EvaluationContext? = nil) : ResolutionDetails(String)
 
     abstract def resolve_number_value(flag_key : String,
-      default : Number = 0,
-      ctx : EvaluationContext? = nil) : ResolutionDetails(Number)
+                                      default : Number = 0,
+                                      ctx : EvaluationContext? = nil) : ResolutionDetails(Number)
 
     abstract def resolve_object_value(flag_key : String,
-      default = nil,
-      ctx : EvaluationContext? = nil) : ResolutionDetails
+                                      default = nil,
+                                      ctx : EvaluationContext? = nil) : ResolutionDetails
   end
 
   abstract class AutoDisposable

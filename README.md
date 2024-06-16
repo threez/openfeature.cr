@@ -1,6 +1,19 @@
-# openfeature
+# openfeature [![.github/workflows/ci.yml](https://github.com/threez/openfeature.cr/actions/workflows/ci.yml/badge.svg)](https://github.com/threez/openfeature.cr/actions/workflows/ci.yml) [![https://threez.github.io/openfeature.cr/](https://badgen.net/badge/api/documentation/green)](https://threez.github.io/openfeature.cr/)
 
-TODO: Write a description here
+OpenFeature is an open specification that provides a vendor-agnostic,
+community-driven API for feature flagging that works with your favorite
+feature flag management tool or in-house solution.
+
+Feature flags are a software development technique that allows teams to
+enable, disable or change the behavior of certain features or code paths
+in a product or service, without modifying the source code.
+
+Standardizing feature flags unifies tools and vendors behind a common
+interface, avoiding vendor lock-in at the code level. It provides a
+framework for building extensions and integrations that can be shared
+across the community.
+
+This library implements the crystal version of this specification.
 
 ## Installation
 
@@ -9,7 +22,7 @@ TODO: Write a description here
    ```yaml
    dependencies:
      openfeature:
-       github: your-github-user/openfeature
+       github: threez/openfeature.cr
    ```
 
 2. Run `shards install`
@@ -18,13 +31,16 @@ TODO: Write a description here
 
 ```crystal
 require "openfeature"
+require "openfeature/provider/*"
+
+OpenFeature.provider = OpenFeature::NoopProvider.new
+client = OpenFeature.client("app")
+
+v2_enabled = client.boolean_value("v2_enabled", true)
+v2_enabled.should eq(true)
 ```
 
 TODO: Write usage instructions here
-
-## Development
-
-TODO: Write development instructions here
 
 ## Contributing
 

@@ -1,5 +1,6 @@
 require "./hook"
 
+# :nodoc:
 class Fiber
   # :nodoc:
   # Transaction context is a container for transaction-specific evaluation context
@@ -82,7 +83,7 @@ module OpenFeature
 
     def merge(other : EvaluationContext) : EvaluationContext
       EvaluationContext.new(targeting_key: other.targeting_key || @targeting_key,
-                            custom_fields: @custom_fields.merge(other.custom_fields))
+        custom_fields: @custom_fields.merge(other.custom_fields))
     end
 
     # Any fields defined in the transaction evaluation context will overwrite duplicate
@@ -123,11 +124,11 @@ module OpenFeature
     property flag_metadata : FlagMetadata?
 
     def initialize(@value : T, *,
-      @variant : String? = nil,
-      @error_code : ErrorCode? = nil,
-      @error_message : String? = nil,
-      @reason : Reason? = nil,
-      @flag_metadata : FlagMetadata? = nil)
+                   @variant : String? = nil,
+                   @error_code : ErrorCode? = nil,
+                   @error_message : String? = nil,
+                   @reason : Reason? = nil,
+                   @flag_metadata : FlagMetadata? = nil)
     end
   end
 
@@ -137,13 +138,13 @@ module OpenFeature
     property flag_key : String
 
     def initialize(@flag_key : String, *,
-      @value : DetailValue,
-      @value_type : Type,
-      @variant : String? = nil,
-      @error_code : ErrorCode? = nil,
-      @error_message : String? = nil,
-      @reason : Reason? = nil,
-      @flag_metadata : FlagMetadata? = nil)
+                   @value : DetailValue,
+                   @value_type : Type,
+                   @variant : String? = nil,
+                   @error_code : ErrorCode? = nil,
+                   @error_message : String? = nil,
+                   @reason : Reason? = nil,
+                   @flag_metadata : FlagMetadata? = nil)
     end
 
     def initialize(@flag_key : String, value_type : Type, resolution : ResolutionDetails(T))

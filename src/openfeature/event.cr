@@ -1,4 +1,3 @@
-
 require "./types"
 
 module OpenFeature
