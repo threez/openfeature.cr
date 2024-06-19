@@ -3,7 +3,7 @@ require "../src/openfeature"
 require "../src/openfeature/providers/*"
 require "../src/openfeature/hooks/*"
 
-class CaptureEvaluationContextProvider < OpenFeature::Providers::Noop
+class CaptureEvaluationContextProvider < OpenFeature::Providers::InMemory
   property last_ctx : OpenFeature::EvaluationContext {
     OpenFeature::EvaluationContext.new
   }

@@ -5,7 +5,7 @@ describe OpenFeature do
     count = 0
 
     OpenFeature.add_handler(OpenFeature::ProviderEvent::READY) do |event|
-      event.provider_name.should eq("noop")
+      event.provider_name.should eq("InMemory")
       count += 1
     end
 
@@ -15,7 +15,7 @@ describe OpenFeature do
   end
 
   describe "_value functions" do
-    OpenFeature.provider = OpenFeature::Providers::Noop.new
+    OpenFeature.provider = OpenFeature::Providers::InMemory.new
     client = OpenFeature.client("app")
 
     it "boolean_value" do

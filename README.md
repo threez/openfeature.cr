@@ -33,7 +33,7 @@ This library implements the crystal version of this specification.
 require "openfeature"
 require "openfeature/providers/*"
 
-OpenFeature.provider = OpenFeature::Providers::Noop.new
+OpenFeature.provider = OpenFeature::Providers::InMemory.new
 client = OpenFeature.client("app")
 
 v2_enabled = client.boolean_value("v2_enabled", true)

@@ -68,14 +68,14 @@ module OpenFeature
 
     # emits event to global and client providers registered
     private def emit_event(event : ProviderEvent, details : ProviderEventDetails)
-      if handlers = OpenFeature.handlers[event]
+      if handlers = OpenFeature.handlers.fetch(event, Array(Handler).new)
         handlers.each do |handler|
           handler.call(EventDetails.new(@name, details))
         end
       end
 
       @clients.each do |client|
-        if handlers = client.handlers[event]
+        if handlers = client.handlers.fetch(event, Array(Handler).new)
           handlers.each do |handler|
             handler.call(EventDetails.new(@name, details))
           end
