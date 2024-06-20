@@ -18,29 +18,36 @@ module OpenFeature::Providers
     def resolve_boolean_value(flag_key : FlagKey,
                               default : Bool = true,
                               ctx : EvaluationContext? = nil) : ResolutionDetails
-      value = @flags.fetch(flag_key, default)
-      ResolutionDetails.new(value, reason: Reason::STATIC)
+      resolve_value(flag_key, default, ctx)
     end
 
     def resolve_string_value(flag_key : FlagKey,
                              default : String = "",
                              ctx : EvaluationContext? = nil) : ResolutionDetails
-      value = @flags.fetch(flag_key, default)
-      ResolutionDetails.new(value, reason: Reason::STATIC)
+      resolve_value(flag_key, default, ctx)
     end
 
     def resolve_number_value(flag_key : FlagKey,
                              default : Number = 0,
                              ctx : EvaluationContext? = nil) : ResolutionDetails
-      value = @flags.fetch(flag_key, default)
-      ResolutionDetails.new(value, reason: Reason::STATIC)
+      resolve_value(flag_key, default, ctx)
     end
 
     def resolve_object_value(flag_key : FlagKey,
                              default : Structure,
                              ctx : EvaluationContext? = nil) : ResolutionDetails
-      value = @flags.fetch(flag_key, default)
-      ResolutionDetails.new(value, reason: Reason::STATIC)
+      resolve_value(flag_key, default, ctx)
+    end
+
+    private def resolve_value(flag_key : FlagKey,
+                              default,
+                              ctx : EvaluationContext? = nil) : ResolutionDetails
+      reason = Reason::STATIC
+      value = @flags.fetch(flag_key) do
+        reason = Reason::DEFAULT
+        default
+      end
+      ResolutionDetails.new(value, reason: reason)
     end
   end
 end
