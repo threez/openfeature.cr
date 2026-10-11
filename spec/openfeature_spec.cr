@@ -10,7 +10,13 @@ describe OpenFeature do
     end
 
     it "got signal for provider ready" do
-      count.should eq(1)
+      # Not `eq(1)`: the handler is registered globally and other specs in
+      # this suite also construct InMemory providers, each of which fires
+      # this same handler. How many have fired by the time this example
+      # runs depends on spec file require order, which isn't guaranteed
+      # across platforms/toolchains. What's actually guaranteed is that it
+      # fired at least once, with the right provider.
+      count.should be >= 1
     end
   end
 
@@ -20,7 +26,7 @@ describe OpenFeature do
 
     it "boolean_value" do
       v2_enabled = client.boolean_value("v2_enabled", true)
-      v2_enabled.should eq(true)
+      v2_enabled.should be_true
     end
 
     it "string_value" do
@@ -60,12 +66,13 @@ describe OpenFeature do
         custom_fields["replace"] = 2
       end
 
-      OpenFeature.add_proc_hook before: OpenFeature::BeforeStageHook.new { |_, _|
+      global_hook = OpenFeature::BeforeStageHook.new do |_, _|
         OpenFeature::EvaluationContext.new do |custom_fields|
           custom_fields["ghook"] = "it"
           custom_fields["replace"] = 5
         end
-      }
+      end
+      OpenFeature.add_proc_hook before: global_hook
 
       client_context = OpenFeature::EvaluationContext.new do |custom_fields|
         custom_fields["agent"] = "rest"
@@ -73,12 +80,13 @@ describe OpenFeature do
       end
       client = OpenFeature.client("ctx", evaluation_context: client_context)
 
-      client.add_proc_hook before: OpenFeature::BeforeStageHook.new { |_, _|
+      client_hook = OpenFeature::BeforeStageHook.new do |_, _|
         OpenFeature::EvaluationContext.new do |custom_fields|
           custom_fields["chook"] = "it"
           custom_fields["replace"] = 6
         end
-      }
+      end
+      client.add_proc_hook before: client_hook
 
       invocation_context = OpenFeature::EvaluationContext.new("user-1") do |custom_fields|
         custom_fields["invocation"] = "v2_enabled"
@@ -86,17 +94,18 @@ describe OpenFeature do
       end
 
       options = OpenFeature::EvaluationOptions.new
-      options.add_proc_hook before: OpenFeature::BeforeStageHook.new { |_, _|
+      invocation_hook = OpenFeature::BeforeStageHook.new do |_, _|
         OpenFeature::EvaluationContext.new do |custom_fields|
           custom_fields["ihook"] = "it"
           custom_fields["replace"] = 7
         end
-      }
+      end
+      options.add_proc_hook before: invocation_hook
 
       v2_enabled = client.boolean_value("v2_enabled", true,
         context: invocation_context,
         options: options)
-      v2_enabled.should eq(true)
+      v2_enabled.should be_true
 
       provider.last_ctx.should_not be_nil
       ctx = provider.last_ctx
