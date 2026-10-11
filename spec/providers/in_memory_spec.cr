@@ -14,15 +14,15 @@ describe OpenFeature::Providers::InMemory do
   it "can resolve boolean" do
     r = mem.resolve_boolean_value("unknown", true)
     r.reason.should eq(OpenFeature::Reason::DEFAULT)
-    r.value.should eq(true)
+    r.value.should be_true
 
     r = mem.resolve_boolean_value("unknown", false)
     r.reason.should eq(OpenFeature::Reason::DEFAULT)
-    r.value.should eq(false)
+    r.value.should be_false
 
     r = mem.resolve_boolean_value("boolean", false)
     r.reason.should eq(OpenFeature::Reason::STATIC)
-    r.value.should eq(true)
+    r.value.should be_true
   end
 
   it "can resolve number" do

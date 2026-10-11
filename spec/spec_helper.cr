@@ -4,9 +4,9 @@ require "../src/openfeature/providers/*"
 require "../src/openfeature/hooks/*"
 
 class CaptureEvaluationContextProvider < OpenFeature::Providers::InMemory
-  property last_ctx : OpenFeature::EvaluationContext {
+  property last_ctx : OpenFeature::EvaluationContext do
     OpenFeature::EvaluationContext.new
-  }
+  end
 
   def resolve_boolean_value(flag_key : OpenFeature::FlagKey,
                             default : Bool = true,
